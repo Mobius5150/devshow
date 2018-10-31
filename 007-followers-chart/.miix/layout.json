@@ -1,0 +1,34 @@
+[
+  {
+    "activeItemIndex": 0,
+    "content": [
+      {
+        "componentName": "Controls",
+        "isClosable": true,
+        "reorderEnabled": true,
+        "title": "Controls",
+        "type": "component",
+        "width": 0.75
+      },
+      {
+        "componentName": "ControlsConsole",
+        "isClosable": true,
+        "reorderEnabled": true,
+        "title": "Control Output Console",
+        "type": "component"
+      },
+      {
+        "componentName": "WebpackConsole",
+        "isClosable": true,
+        "reorderEnabled": true,
+        "title": "Webpack Console",
+        "type": "component"
+      }
+    ],
+    "isClosable": true,
+    "reorderEnabled": true,
+    "title": "",
+    "type": "stack",
+    "width": 100
+  }
+]

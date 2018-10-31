@@ -1,0 +1,25 @@
+{
+  "coverUrl": null,
+  "createdAt": "2018-01-12T16:33:07.000Z",
+  "deletedAt": null,
+  "description": "<p>Some info</p>\n",
+  "hasPublishedVersions": false,
+  "id": 171461,
+  "installation": null,
+  "name": "Interactive Test",
+  "ownerId": 594859,
+  "typeId": 24423,
+  "updatedAt": "2018-01-12T16:48:52.000Z",
+  "versions": [
+    {
+      "changelog": "Initial release",
+      "createdAt": "2018-01-12T16:33:07.000Z",
+      "id": 176111,
+      "installation": "<p>Install info</p>\n",
+      "state": "draft",
+      "updatedAt": "2018-10-10T20:28:55.000Z",
+      "version": "0.1.0",
+      "versionOrder": 256
+    }
+  ]
+}
