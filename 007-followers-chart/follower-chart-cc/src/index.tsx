@@ -21,7 +21,6 @@ actions.initChart();
 
 // Finally, we need to listen for changes
 Mixer.socket.on('onWorldUpdate', (world) => {
-    console.log('World Update', world)
     if (world.history) {
         actions.updateHistory(world.history);
     }
