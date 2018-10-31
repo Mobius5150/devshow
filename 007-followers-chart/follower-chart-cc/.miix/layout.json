@@ -16,13 +16,6 @@
         "reorderEnabled": true,
         "title": "Control Output Console",
         "type": "component"
-      },
-      {
-        "componentName": "WebpackConsole",
-        "isClosable": true,
-        "reorderEnabled": true,
-        "title": "Webpack Console",
-        "type": "component"
       }
     ],
     "isClosable": true,
