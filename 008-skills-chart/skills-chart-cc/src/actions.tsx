@@ -1,13 +1,14 @@
 import { BehaviorSubject } from 'rxjs';
 import { Chart } from 'chart.js';
+import { ISkillSummary } from './models';
 
-import { SkillsStateHistory } from '../../game-client/src/live_loader';
 let chart: Chart;
 
-const skillsRecord: BehaviorSubject<SkillsStateHistory> = new BehaviorSubject({});
+const skillSummary: BehaviorSubject<ISkillSummary> = new BehaviorSubject({});
 
-skillsRecord
-    .subscribe((points: SkillsStateHistory) => {
+skillSummary
+    .subscribe((points: ISkillSummary[]) => {
+        // reset our data chart
         if (!chart || !chart.data) {
             return;
         }
@@ -17,28 +18,29 @@ skillsRecord
             dataset.data = [];
         });
 
+
         Object.keys(points).forEach(point => {
             // need to format the timestamp smaller
             chart.data.labels.push(points[point].name);
             chart.data.datasets.forEach((dataset: any) => {
-                dataset.data.push({x: points[point].name, y: points[point].count});
+                dataset.data.push({ x: points[point].name, y: points[point].count });
             });
             chart.update();
         });
     });
 
-export function updateHistory(history: SkillsStateHistory) {
-    skillsRecord.next(history);
+export function updateSummaries(summary: ISkillSummary[]) {
+    skillSummary.next(summary);
 }
 
 export function initChart() {
-    var ctx = (document.getElementById('follower-chart') as HTMLCanvasElement).getContext('2d');
+    var ctx = (document.getElementById('skills-chart') as HTMLCanvasElement).getContext('2d');
     chart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: [],
             datasets: [{
-                label: "Following Chart",
+                label: "Skills Chart",
                 data: [],
             }]
         },

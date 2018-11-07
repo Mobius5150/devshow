@@ -1,6 +1,5 @@
 import * as Mixer from '@mixer/cdk-std';
 import * as actions from './actions';
-import { SkillsStateHistory } from '../../game-client/src/live_loader';
 
 // Import our custom CSS.
 require('./style.scss');
@@ -21,8 +20,8 @@ actions.initChart();
 
 // Finally, we need to listen for changes
 Mixer.socket.on('onWorldUpdate', (world) => {
-    if (world.history) {
-        actions.updateHistory(world.history);
+    if (world.summaries) {
+        actions.updateSummaries(world.summaries);
     }
 });
 
