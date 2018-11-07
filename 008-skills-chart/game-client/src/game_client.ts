@@ -1,6 +1,6 @@
 import { ShortcodeAuthClient, IAccessToken, LocalTokenStore } from 'mixer-shortcode-oauth';
 import { GameClient, setWebSocket, IParticipant, IInputEvent, IInput, } from '@mixer/interactive-node';
-import { LiveLoader, FollowerStateHistory } from './live_loader';
+import { LiveLoader, FollowerStateHistory, ISkillEvent } from './live_loader';
 import * as Mixer from '@mixer/client-node';
 import * as ws from 'ws';
 import * as fs from 'fs';
@@ -47,17 +47,17 @@ export class MinimalGameClient {
             };
         }
 
-        setInterval(() => {
-            this.runningTotals.addEvent({
-                id: Math.round(Math.random() * 10).toString(),
-                user: {
-                    userId: 1,
-                    name: 'mobius5150',
-                }
-            });
-            this.totalsUpdated(this.runningTotals.getEventSummaries());
-            console.log(this.runningTotals.getEventSummaries());
-        }, 2000);
+        // setInterval(() => {
+        //     this.runningTotals.addEvent({
+        //         id: Math.round(Math.random() * 10).toString(),
+        //         user: {
+        //             userId: 1,
+        //             name: 'mobius5150',
+        //         }
+        //     });
+        //     this.totalsUpdated(this.runningTotals.getEventSummaries());
+        //     console.log(this.runningTotals.getEventSummaries());
+        // }, 2000);
 
         this.gameClient.on('open', () => this.mixerClientOpened());
         this.gameClient.on('error', (e) => this.gameClientError(e));
@@ -74,8 +74,15 @@ export class MinimalGameClient {
     private mixerClientOpened() {
         this.mixerClient
             .request<{ channel: { id: number } }>('GET', 'users/current')
-            .then(user => this.liveLoader.startFollowerListener(user.body.channel.id, MinimalGameClient.HISTORY_SIZE))
-            .then(subject => subject.subscribe(h => this.historyUpdated(h)))
+            .then(user => {
+                this.liveLoader
+                    .startFollowerListener(user.body.channel.id, MinimalGameClient.HISTORY_SIZE)
+                    .subscribe(h => this.historyUpdated(h));
+
+                this.liveLoader
+                    .startSkillListener(user.body.channel.id)
+                    .subscribe(e => this.skillEventReceived(e));
+            })
             .then(() => console.log('Started follower listener'))
             .catch(this.gameClientError);
 
@@ -85,6 +92,27 @@ export class MinimalGameClient {
             .catch(this.gameClientError);
     }
 
+    skillEventReceived(e: ISkillEvent): void {
+        if (!this.events[e.skillId]) {
+            this.events[e.skillId] = {
+                name: e.manifest.name,
+            };
+        }
+
+        this.runningTotals.addEvent({
+            id: e.skillId,
+            user: {
+                userId: e.triggeringUserId,
+                name: '<unknown>',
+            }
+        });
+
+        this.totalsUpdated(this.runningTotals.getEventSummaries());
+    }
+
+    /**
+     * Called when skill summary totals are updated
+     */
     private async totalsUpdated(totals: IRunningTotalEventSummary[]) {
         const summaries = [];
         for (let t of totals) {
@@ -93,11 +121,15 @@ export class MinimalGameClient {
                 ...(await this.getEvent(t.id)),
             });
         }
+        
         this.gameClient.updateWorld({
             summaries,
         });
     }
 
+    /**
+     * Retrieves information about the event with the given id
+     */
     private async getEvent(id): Promise<ISkillInfo> {
         return this.events[id];
     }

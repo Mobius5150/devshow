@@ -1,10 +1,22 @@
 import { Carina } from 'carina';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import * as ws from 'ws';
 
 export interface IFollowerState {
     timestamp: Date,
     count: number,
+}
+
+export interface ISkillEvent {
+    channelId: number;
+    skillId: string;
+    executionId: string;
+    manifest: {
+        name: string;
+    };
+    parameters: object;
+    socketUrl: null | string;
+    triggeringUserId: number;
 }
 
 export type FollowerStateHistory = { [timestamp: number]: IFollowerState };
@@ -34,6 +46,15 @@ export class LiveLoader {
         });
 
         return subject;
+    }
+
+    public startSkillListener(channelId: number): Observable<ISkillEvent> {
+        return new Observable<ISkillEvent>((observer) => {
+            this.carina.subscribe<ISkillEvent>(`channel:${channelId}:skill`, data => {
+                console.log('constellation', data);
+                observer.next(data);
+            });
+        });
     }
 
     private addToHistory(history: FollowerStateHistory, maxSize: number, newItem: IFollowerState) {
