@@ -4,7 +4,8 @@ import { LiveLoader, FollowerStateHistory } from './live_loader';
 import * as Mixer from '@mixer/client-node';
 import * as ws from 'ws';
 import * as fs from 'fs';
-import { RunningTotal, IRunningTotalEvent } from './running_total';
+import { RunningTotal, IRunningTotalEvent, IRunningTotalEventSummary } from './running_total';
+import { ISkillInfo } from './models';
 
 interface AuthToken {
     authToken: string;
@@ -31,12 +32,20 @@ export class MinimalGameClient {
 
     private runningTotals: RunningTotal<IRunningTotalEvent>;
 
+    private events: {[id: string]: ISkillInfo} = {};
+
     constructor(authToken: AuthToken, mixerClient: Mixer.Client) {
         this.mixerClient = mixerClient;
         this.gameClient = new GameClient();
         this.liveLoader = new LiveLoader();
         this.liveLoader.init();
         this.runningTotals = new RunningTotal<IRunningTotalEvent>(MinimalGameClient.RUNNING_TOTAL_SIZE);
+
+        for (let i = 0; i < 10; ++i) {
+            this.events[i.toString()] = {
+                name: i.toString(),
+            };
+        }
 
         setInterval(() => {
             this.runningTotals.addEvent({
@@ -46,6 +55,7 @@ export class MinimalGameClient {
                     name: 'mobius5150',
                 }
             });
+            this.totalsUpdated(this.runningTotals.getEventSummaries());
             console.log(this.runningTotals.getEventSummaries());
         }, 2000);
 
@@ -73,6 +83,23 @@ export class MinimalGameClient {
             .getScenes()
             .then(() => this.goLive())
             .catch(this.gameClientError);
+    }
+
+    private async totalsUpdated(totals: IRunningTotalEventSummary[]) {
+        const summaries = [];
+        for (let t of totals) {
+            summaries.push({
+                ...t,
+                ...(await this.getEvent(t.id)),
+            });
+        }
+        this.gameClient.updateWorld({
+            summaries,
+        });
+    }
+
+    private async getEvent(id): Promise<ISkillInfo> {
+        return this.events[id];
     }
 
     /** 
